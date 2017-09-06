@@ -111,6 +111,7 @@ function random_key() {
 }
 
 function run_round() {
+	document.getElementById("current_score").innerHTML = sequence.length.toString();
 	disable_all();
 	progress = 0;
 	sequence.push(random_key());
@@ -129,7 +130,6 @@ function check(key) {
 }
 
 function reset_game() {
-	console.log("bad, resetting")
 	sequence = [];
 	run_round();
 }
