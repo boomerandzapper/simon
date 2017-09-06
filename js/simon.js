@@ -68,19 +68,15 @@ function NoteBox(key, onClick) {
 // clicking the corresponding boxes on the page will play the NoteBox's audio.
 // It will also demonstrate programmatically playing notes by calling play directly.
 let notes = {};
-let record = [];
+
 
 //Setting Up
 KEYS.forEach(function (key) {
-	notes[key] = new NoteBox(key, save);
+	notes[key] = new NoteBox(key, check);
 });
 
-//Saving a Played Key
-function save(key) {
-	record.push(key);
-	let record_length = record.length;
-	setTimeout(function(){if (record_length === record.length) {playback(record); }}, ECHO_DELAY)
-}
+
+
 
 //Disabling all NoteBoxes
 function disable_all() {
@@ -98,7 +94,44 @@ function enable_all() {
 function playback(keys) {
 	disable_all();
 	keys.forEach(function(key, i) {
-		setTimeout(function() {notes[key].play(); (i !== (keys.length - 1) || enable_all())}, i * NOTE_DURATION);
+		setTimeout(function() {notes[key].play(); setTimeout(function(){(i !== (keys.length - 1) || enable_all())}, NOTE_DURATION)}, i * NOTE_DURATION);
 	});
-	record = [];
+
 }
+
+//Game
+
+let sequence = [];
+let progress = 0;
+
+
+//https://stackoverflow.com/questions/5915096/get-random-item-from-javascript-array
+function random_key() {
+	return KEYS[Math.floor(Math.random()*KEYS.length)];
+}
+
+function run_round() {
+	disable_all();
+	progress = 0;
+	sequence.push(random_key());
+	setTimeout(function(){playback(sequence)}, NOTE_DURATION);
+}
+
+function check(key) {
+	if (sequence[progress] === key) {
+		progress++;
+		if (progress === sequence.length) {
+			run_round();
+		}
+	} else {
+		reset_game()
+	}
+}
+
+function reset_game() {
+	console.log("bad, resetting")
+	sequence = [];
+	run_round();
+}
+
+run_round();
