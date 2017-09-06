@@ -1,5 +1,7 @@
-var KEYS = ['c', 'd', 'e', 'f'];
-var NOTE_DURATION = 1000;
+const KEYS = ['c', 'd', 'e', 'f'];
+const NOTE_DURATION = 1000;
+
+const ECHO_DELAY = 2500;
 
 // NoteBox
 //
@@ -7,17 +9,17 @@ var NOTE_DURATION = 1000;
 // for playing audio, handling clicks,and enabling/disabling the note box.
 function NoteBox(key, onClick) {
 	// Create references to box element and audio element.
-	var boxEl = document.getElementById(key);
-	var audioEl = document.getElementById(key + '-audio');
+	let boxEl = document.getElementById(key);
+	let audioEl = document.getElementById(key + '-audio');
 	if (!boxEl) throw new Error('No NoteBox element with id' + key);
 	if (!audioEl) throw new Error('No audio element with id' + key + '-audio');
 
 	// When enabled, will call this.play() and this.onClick() when clicked.
 	// Otherwise, clicking has no effect.
-	var enabled = true;
+	let enabled = true;
 	// Counter of how many play calls have been made without completing.
 	// Ensures that consequent plays won't prematurely remove the active class.
-	var playing = 0;
+	let playing = 0;
 
 	this.key = key;
 	this.onClick = onClick || function () {};
@@ -65,12 +67,38 @@ function NoteBox(key, onClick) {
 // This will create a map from key strings (i.e. 'c') to NoteBox objects so that
 // clicking the corresponding boxes on the page will play the NoteBox's audio.
 // It will also demonstrate programmatically playing notes by calling play directly.
-var notes = {};
+let notes = {};
+let history = [];
+let timeup = true;
 
+//Setting Up
 KEYS.forEach(function (key) {
-	notes[key] = new NoteBox(key);
+	notes[key] = new NoteBox(key, save);
 });
 
-KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
+function save(key) {
+	history.push(key);
+	let history_length = history.length;
+	console.log(history);
+	setTimeout(function(){if (history_length === history.length) {playback(history)}}, ECHO_DELAY)
+};
+
+// function disable_all() {
+// 	for (var note in notes) {
+// 		note.disable();
+// }};
+
+
+function playback(keys) {
+	console.log("playing..." + history)
+	history.forEach(function(key, i) {
 	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
-});
+})
+	history = [];
+}
+
+// disable_all();
+//Playing Intro
+// KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
+// 	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
+// });
