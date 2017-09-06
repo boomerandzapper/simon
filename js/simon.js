@@ -80,25 +80,35 @@ function save(key) {
 	history.push(key);
 	let history_length = history.length;
 	console.log(history);
-	setTimeout(function(){if (history_length === history.length) {playback(history)}}, ECHO_DELAY)
+	setTimeout(function(){if (history_length === history.length) {playback(history); }}, ECHO_DELAY)
 };
 
-// function disable_all() {
-// 	for (var note in notes) {
-// 		note.disable();
-// }};
+function disable_all() {
+	console.log("disable")
+	for (var note in notes) {
+		notes[note].disable();
+}};
 
+function enable_all() {
+	console.log("enable")
+	for (var note in notes) {
+		notes[note].enable();
+}};
 
 function playback(keys) {
-	console.log("playing..." + history)
+	disable_all();
+	console.log("playing... " + keys)
+	let history_length = history.length;
 	history.forEach(function(key, i) {
-	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
+	setTimeout(function() {notes[key].play(); console.log(i, history_length); (i !== (history_length - 1) || enable_all())}, i * NOTE_DURATION);
 })
 	history = [];
-}
+};
 
-// disable_all();
-//Playing Intro
+
+// disable_all()
+// Playing Intro
 // KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
-// 	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
+
+// 	setTimeout(function(){notes[key].play(); console.log(key);}, i * NOTE_DURATION);
 // });
