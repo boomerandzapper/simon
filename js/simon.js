@@ -1,6 +1,6 @@
 const KEYS = ['c', 'd', 'e', 'f'];
 const NOTE_DURATION = 1000;
-
+const GAME_DELAY = 2 * NOTE_DURATION;
 const ECHO_DELAY = 2500;
 
 // NoteBox
@@ -67,58 +67,85 @@ function NoteBox(key, onClick) {
 // This will create a map from key strings (i.e. 'c') to NoteBox objects so that
 // clicking the corresponding boxes on the page will play the NoteBox's audio.
 // It will also demonstrate programmatically playing notes by calling play directly.
+
+// GENERAL/SWITCH CODE
+
+// General/Switch Variables:
 let notes = {};
+let game = false
 
+let echo_game_switch = document.getElementById("echo_game_switch");
+let score_card = document.getElementById("current_score");
 
-//Setting Up
-KEYS.forEach(function (key) {
-	notes[key] = new NoteBox(key, check);
-});
-
-
-
-
-//Disabling all NoteBoxes
-function disable_all() {
+// General/Switch Functions:
+// Disabling all NoteBoxes + Switch
+function disable_all(notes) {
+	echo_game_switch.removeEventListener('mousedown', echo_game_switch_function);
 	for (var note in notes) {
 		notes[note].disable();
 }}
 
-//Enabling all NoteBoxes
-function enable_all() {
+// Enabling all NoteBoxes + Switch
+function enable_all(notes) {
+	echo_game_switch.addEventListener('mousedown', echo_game_switch_function);
 	for (var note in notes) {
 		notes[note].enable();
 }}
 
-//Playing a set of keys while disabling user input
-function playback(keys) {
-	disable_all();
-	keys.forEach(function(key, i) {
-		setTimeout(function() {notes[key].play(); setTimeout(function(){(i !== (keys.length - 1) || enable_all())}, NOTE_DURATION)}, i * NOTE_DURATION);
+//Setting Up
+function setup(callback) {
+	KEYS.forEach(function (key) {
+		notes[key] = new NoteBox(key, callback);
 	});
-
+	enable_all(notes);
 }
 
-//Game
+// Playing a set of keys while disabling user input
+function playback(keys) {
+	disable_all(notes);
+	keys.forEach(function(key, i) {
+		setTimeout(function() {notes[key].play(); setTimeout(function(){i !== (keys.length - 1) || enable_all(notes)}, NOTE_DURATION)}, i * NOTE_DURATION);
+	});
+}
 
+//SWITCH CODE
+
+function echo_game_switch_function() {
+	disable_all(notes);
+	game = !game;
+	sequence = [];
+	record = [];
+	game ? score_card.style.visibility = "visible" : score_card.style.visibility = "hidden";
+	this.innerHTML = game ? "Switch to Echo" : "Switch to Game";
+	setup(game ? check : save);
+	!game || run_round();
+}
+
+
+// GAME CODE
+
+// Game Variables:
 let sequence = [];
 let progress = 0;
 
-
-//https://stackoverflow.com/questions/5915096/get-random-item-from-javascript-array
+// Game Functions:
+// Taken from https://stackoverflow.com/questions/5915096/get-random-item-from-javascript-array
 function random_key() {
 	return KEYS[Math.floor(Math.random()*KEYS.length)];
 }
 
 function run_round() {
-	document.getElementById("current_score").innerHTML = sequence.length.toString();
-	disable_all();
+	disable_all(notes);
+	score_card.innerHTML = ("Score: " + sequence.length.toString());
 	progress = 0;
 	sequence.push(random_key());
-	setTimeout(function(){playback(sequence)}, NOTE_DURATION);
+	setTimeout(function(){playback(sequence)}, GAME_DELAY);
 }
 
 function check(key) {
+	if (game === false) {
+		return
+	}
 	if (sequence[progress] === key) {
 		progress++;
 		if (progress === sequence.length) {
@@ -134,4 +161,19 @@ function reset_game() {
 	run_round();
 }
 
-run_round();
+// ECHO CODE
+
+// Echo Variables:
+let record = [];
+
+// Echo Functions:
+
+// Saving a Played Key
+function save(key) {
+  record.push(key);
+  let record_length = record.length;
+  setTimeout(function(){if (record_length === record.length && game === false) {playback(record); record = [];}}, ECHO_DELAY)
+}
+
+// Initialization
+setup(save);
